@@ -31,10 +31,29 @@ The application reads connection settings from environment variables:
 | `DB_NAME` | `pan_african` |
 | `DB_USER` | `pan_african` |
 | `DB_PASSWORD` | `pan_african_dev` |
-| `DB_DDL_AUTO` | `none` |
+| `DB_DDL_AUTO` | `update` |
 | `PORT` | `8081` |
 
-`DB_URL` can override the complete JDBC URL. The default credentials are for local development only; set `DB_USER` and `DB_PASSWORD` appropriately outside local development. Keep schema changes explicit and set up migrations before introducing persistent entities.
+`DB_URL` can override the complete JDBC URL. Defaults are for local development only; use secrets from your MySQL provider outside local development. Keep schema changes explicit and set up migrations before production.
+
+## Deploy on Railway with MySQL
+
+1. Create a Railway project from this backend GitHub repository. The Dockerfile is at the repository root, so leave the root directory blank.
+2. Add a Railway MySQL service. If its service name is `MySQL`, add these variables to the backend service:
+
+| Variable | Value |
+| --- | --- |
+| `SPRING_DATASOURCE_URL` | `jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}` |
+| `DB_USER` | `${{MySQL.MYSQLUSER}}` |
+| `DB_PASSWORD` | `${{MySQL.MYSQLPASSWORD}}` |
+| `DB_DDL_AUTO` | `update` |
+| `FRONTEND_ORIGINS` | `https://pan-african-one.vercel.app` |
+| `PAYAN_BOOTSTRAP_ADMIN_USERNAME` | Your chosen initial admin username |
+| `PAYAN_BOOTSTRAP_ADMIN_PASSWORD` | A strong initial admin password, stored as a Railway secret |
+
+Replace `MySQL` in the variable references if your database service has a different name. Railway supplies `PORT` automatically. Use the Railway MySQL service variables, not `localhost` or a public database host.
+
+After the service is running, generate a public domain in the backend service's Networking settings. Set the Vercel `VITE_API_URL` variable to that domain without an `/api/v1` suffix, then redeploy the frontend. The backend allows the Vercel origin through `FRONTEND_ORIGINS`.
 
 ## First admin account
 
